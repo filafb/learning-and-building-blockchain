@@ -4,9 +4,11 @@ const uuidv4 = require('uuid/v4');
 const app = express();
 const Blockchain = require('./blockchain')
 
+var PORT = process.env.PORT || 3000;
+
 const blockchain = new Blockchain
 
-const identifier = uuidv4().replace('-','');
+const identifier = uuidv4().replace(/-/g,'');
 
 app.use(bodyParser.json());
 
@@ -40,11 +42,43 @@ app.get('/mine', (req, res, next) => {
 });
 
 app.get('/chain', (req, res, next) => {
+  console.log('I got a request')
   const chain = {
     chain: blockchain.chain,
     length: blockchain.chain.length
   }
+  console.log('my response is', chain)
   res.json(chain)
 });
 
-app.listen(3000, () => console.log('listening on 3000'))
+app.post('/nodes/register', (req, res, next) => {
+  let { nodes } = req.body
+  for(let i = 0; i < nodes.length; i++) {
+    blockchain.registerNodes(nodes[i]);
+  }
+  let response = {
+    message: 'new node added',
+    totalNode: [...blockchain.nodes]
+  }
+  console.log(blockchain.nodes)
+  res.status(201).json(response)
+});
+
+app.get('/nodes/resolve', async (req, res, next) => {
+  let replaced = await blockchain.resolveConflicts();
+  let response
+  console.log('replaced',replaced)
+  if(replaced) {
+    response = {
+      message: 'Our chain was replaced',
+    }
+  } else {
+    response = {
+      message: 'Our chain is authoritative'
+    }
+  }
+  response.chain = blockchain.chain
+  res.json(response)
+})
+
+app.listen(PORT, () => console.log(`listening on ${PORT}`))

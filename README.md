@@ -42,3 +42,6 @@ Crucial for blockchain immuatability:
 ## Understanding Proof of Work
   - Proof of Work algorithm (PoW) is how new Blocks are created or mined.
   - Its goal is to discover a number which solves a problem. The number must be difficult to find but easy to verify
+
+## Consensus
+  - Making the blockchain decentralized
